@@ -4,10 +4,19 @@ export const createUser = async (
   username,
   email,
   password,
-  profilepictureurl
+  profilepictureurl,
+  dateofbirth,
+  mobile
 ) => {
-  const text = `INSERT INTO users (username, email, password, profilepictureurl) VALUES ($1, $2, $3, $4) RETURNING *`;
-  const values = [username, email, password, profilepictureurl];
+  const text = `INSERT INTO users (username, email, password, profilepictureurl , dateofbirth , mobile ) VALUES ($1, $2, $3, $4 , $5 , $6) RETURNING *`;
+  const values = [
+    username,
+    email,
+    password,
+    profilepictureurl,
+    dateofbirth,
+    mobile,
+  ];
   const { rows } = await query(text, values);
   return rows[0];
 };

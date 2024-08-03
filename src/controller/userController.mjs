@@ -1,9 +1,17 @@
 import { createUser, getUserByEmail } from "../services/userService.mjs";
 
 export const CreateUser = async (req, res) => {
-  const { username, email, password, profilepictureurl } = req.body;
+  const { username, email, password, profilepictureurl, dateofbirth, mobile } =
+    req.body;
   try {
-    if (!username || !email || !password || !profilepictureurl) {
+    if (
+      !username ||
+      !email ||
+      !password ||
+      !profilepictureurl ||
+      !dateofbirth ||
+      !mobile
+    ) {
       return res.status(400).send({ error: "All fields are required" });
     }
 
@@ -12,7 +20,14 @@ export const CreateUser = async (req, res) => {
       return res.status(400).send({ error: "User already exists" });
     }
 
-    const user = await createUser(username, email, password, profilepictureurl);
+    const user = await createUser(
+      username,
+      email,
+      password,
+      profilepictureurl,
+      dateofbirth,
+      mobile
+    );
     return res.status(201).send(user);
   } catch (error) {
     console.error(error.message);
