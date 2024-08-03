@@ -27,3 +27,10 @@ export const getUserByEmail = async (email) => {
   const { rows } = await query(text, values);
   return rows[0];
 };
+
+export const searchUser = async (username) => {
+  const text = `Select * from users where username ILIKE $1`;
+  const values = [`%${username}%`];
+  const { rows } = await query(text, values);
+  return rows;
+};

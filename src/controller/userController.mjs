@@ -1,4 +1,8 @@
-import { createUser, getUserByEmail } from "../services/userService.mjs";
+import {
+  createUser,
+  getUserByEmail,
+  searchUser,
+} from "../services/userService.mjs";
 
 export const CreateUser = async (req, res) => {
   const { username, email, password, profilepictureurl, dateofbirth, mobile } =
@@ -49,6 +53,25 @@ export const Login = async (req, res) => {
 
     if (user.password !== password) {
       return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    return res.status(200).send(user);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const SearchUser = async (req, res) => {
+  const { username } = req.params;
+  try {
+    if (!username) {
+      return res.status(400).send({ error: "Username is required" });
+    }
+
+    const user = await searchUser(username);
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
     }
 
     return res.status(200).send(user);
