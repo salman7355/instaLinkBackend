@@ -1,17 +1,17 @@
 import express from "express";
+import routes from "./routes/index.mjs";
 
 const app = express();
+app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT;
+
+app.listen(port, () => {
+  console.log(`Server is running on ${port}`);
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.post("/users", (req, res) => {
-  res.send("User created");
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
-});
+app.use(routes);
