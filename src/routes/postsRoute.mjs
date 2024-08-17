@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  addComment,
   addlike,
   addPost,
+  getComments,
   getLikedPosts,
   getPostByid,
   getPosts,
@@ -16,5 +18,9 @@ router.post("/add", addPost);
 router.post("/like", addlike);
 router.get("/likes/:userId", getLikedPosts);
 router.post("/remove", removelike);
+
+// /comment/postId="post id"
+router.get("/comment", getComments);
+router.post("/comment", addComment);
 
 export default router;

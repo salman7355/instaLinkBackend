@@ -34,3 +34,10 @@ export const searchUser = async (username) => {
   const { rows } = await query(text, values);
   return rows;
 };
+
+export const getuserbyid = async (id) => {
+  const text = `SELECT * FROM users WHERE id = $1`;
+  const values = [id];
+  const { rows } = await query(text, values);
+  return rows[0];
+};

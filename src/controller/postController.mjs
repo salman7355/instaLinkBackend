@@ -1,43 +1,30 @@
 import {
+  addcomment,
   addLike,
   createPost,
   declike,
+  getcomments,
   getLikedposts,
   getPostById,
   getPostByUsername,
   getposts,
   removeLike,
+  updateCommentsCount,
   updateLikesCount,
 } from "../services/postService.mjs";
 
-//add here getPostByUsername to be a query to get all posts by a specific user
 export const getPosts = async (req, res) => {
-  // get username from query params
-  const { username } = req.query;
-  //   console.log(typeof username);
+  try {
+    const posts = await getposts();
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      timestamp: new Date(post.timestamp).toLocaleString(), // Converts timestamp to readable format
+    }));
 
-  // if username is provided, get all posts by that user else get all posts
-  if (username) {
-    try {
-      const posts = await getPostByUsername(username);
-
-      if (!posts) {
-        return res.status(404).send({ error: "No posts found" });
-      }
-
-      return res.status(200).send(posts);
-    } catch (error) {
-      console.error(error.message);
-      return res.status(500).send({ error: "Something went wrong" });
-    }
-  } else {
-    try {
-      const posts = await getposts();
-      return res.status(200).send(posts);
-    } catch (error) {
-      console.error(error.message);
-      return res.status(500).send({ error: "Something went wrong" });
-    }
+    return res.status(200).send(formattedPosts);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
   }
 };
 
@@ -109,6 +96,33 @@ export const removelike = async (req, res) => {
     await removeLike(postId, userId);
     await declike(postId);
     return res.status(200).send("Like removed successfully");
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const getComments = async (req, res) => {
+  const { postId } = req.query;
+  try {
+    const comments = await getcomments(postId);
+    return res.status(200).send(comments);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const addComment = async (req, res) => {
+  const { postId, userId, comment } = req.body;
+  try {
+    if (!postId || !userId || !comment) {
+      return res.status(400).send({ error: "All fields are required" });
+    }
+
+    await addcomment(postId, userId, comment);
+    await updateCommentsCount(postId);
+    return res.status(201).send("Comment added successfully");
   } catch (error) {
     console.error(error.message);
     return res.status(500).send({ error: "Something went wrong" });

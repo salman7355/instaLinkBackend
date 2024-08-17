@@ -2,13 +2,13 @@ import e from "cors";
 import { query } from "../config/db.mjs";
 
 export const getposts = async () => {
-  const text = `SELECT * FROM posts`;
+  const text = `SELECT posts.*, users.username, users.profilepictureurl FROM posts JOIN users ON posts.userId = users.id`;
   const { rows } = await query(text);
   return rows;
 };
 
 export const getPostById = async (id) => {
-  const text = `SELECT * FROM posts WHERE id = $1`;
+  const text = ` SELECT posts.*, users.username, users.profilepictureurl FROM posts JOIN users ON posts.userId = users.id WHERE posts.id = $1`;
   const values = [id];
   const { rows } = await query(text, values);
   return rows[0];
@@ -61,6 +61,27 @@ export const getLikedposts = async (userId) => {
 
 export const declike = async (postId) => {
   const text = `UPDATE posts SET likes = likes - 1 WHERE id = $1 RETURNING *`;
+  const values = [postId];
+  const { rows } = await query(text, values);
+  return rows[0];
+};
+
+export const getcomments = async (postId) => {
+  const text = `SELECT * FROM comments WHERE postid = $1`;
+  const values = [postId];
+  const { rows } = await query(text, values);
+  return rows;
+};
+
+export const addcomment = async (postId, userId, comment) => {
+  const text = `INSERT INTO comments (postid, userid, comment) VALUES ($1, $2, $3) RETURNING *`;
+  const values = [postId, userId, comment];
+  const { rows } = await query(text, values);
+  return rows[0];
+};
+
+export const updateCommentsCount = async (postId) => {
+  const text = `UPDATE posts SET comments = comments + 1 WHERE id = $1 RETURNING *`;
   const values = [postId];
   const { rows } = await query(text, values);
   return rows[0];
