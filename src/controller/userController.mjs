@@ -75,7 +75,7 @@ export const SearchUser = async (req, res) => {
       return res.status(404).send({ error: "User not found" });
     }
 
-    return res.status(200).send(user);
+    return res.status(200).json(user);
   } catch (error) {
     console.error(error.message);
     return res.status(500).send({ error: "Something went wrong" });

@@ -36,7 +36,7 @@ export const searchUser = async (username) => {
 };
 
 export const getuserbyid = async (id) => {
-  const text = `SELECT * FROM users WHERE id = $1`;
+  const text = `SELECT * FROM users  WHERE id = $1`;
   const values = [id];
   const { rows } = await query(text, values);
   return rows[0];

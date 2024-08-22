@@ -7,6 +7,8 @@ import {
   getLikedPosts,
   getPostByid,
   getPosts,
+  getUserPosts,
+  handleLike,
   removelike,
 } from "../controller/postController.mjs";
 
@@ -15,12 +17,13 @@ const router = express.Router();
 router.get("/all", getPosts);
 router.get("/:id", getPostByid);
 router.post("/add", addPost);
-router.post("/like", addlike);
+router.get("/user/:id", getUserPosts);
+router.post("/like", handleLike);
+
 router.get("/likes/:userId", getLikedPosts);
-router.post("/remove", removelike);
 
 // /comment/postId="post id"
-router.get("/comment", getComments);
+router.get("/comment/:postId", getComments);
 router.post("/comment", addComment);
 
 export default router;

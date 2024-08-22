@@ -6,11 +6,12 @@ import {
   getcomments,
   getLikedposts,
   getPostById,
-  getPostByUsername,
+  getPostsById,
   getposts,
   removeLike,
   updateCommentsCount,
   updateLikesCount,
+  checkIfLiked,
 } from "../services/postService.mjs";
 
 export const getPosts = async (req, res) => {
@@ -51,6 +52,17 @@ export const getPostByid = async (req, res) => {
       return res.status(404).send({ error: "Post not found" });
     }
     return res.status(200).send(post);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const getUserPosts = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const posts = await getPostsById(id);
+    return res.status(200).send(posts);
   } catch (error) {
     console.error(error.message);
     return res.status(500).send({ error: "Something went wrong" });
@@ -102,14 +114,26 @@ export const removelike = async (req, res) => {
   }
 };
 
+const formatDate = (isoDateString) => {
+  const date = new Date(isoDateString);
+  return date.toISOString().split("T")[0]; // Formats to 'YYYY-MM-DD'
+};
+
 export const getComments = async (req, res) => {
-  const { postId } = req.query;
+  const { postId } = req.params;
   try {
     const comments = await getcomments(postId);
-    return res.status(200).send(comments);
+
+    // Format the date in each comment
+    const formattedComments = comments.map((comment) => ({
+      ...comment,
+      timestamp: formatDate(comment.timestamp), // Format the timestamp to only the day
+    }));
+
+    return res.status(200).json(formattedComments);
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };
 
@@ -122,9 +146,37 @@ export const addComment = async (req, res) => {
 
     await addcomment(postId, userId, comment);
     await updateCommentsCount(postId);
-    return res.status(201).send("Comment added successfully");
+    return res.status(201).json("Comment added successfully");
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+export const handleLike = async (req, res) => {
+  const { postId, userId } = req.body;
+
+  try {
+    if (!postId || !userId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check if the user has already liked the post
+    const existingLike = await checkIfLiked(postId, userId);
+
+    if (existingLike) {
+      // User has already liked this post, so remove the like
+      await removeLike(postId, userId);
+      await declike(postId); // Decrement the likes count
+      return res.status(200).json("Like removed successfully");
+    } else {
+      // User has not liked this post yet, so add the like
+      await addLike(postId, userId);
+      await updateLikesCount(postId); // Increment the likes count
+      return res.status(201).json("Like added successfully");
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };

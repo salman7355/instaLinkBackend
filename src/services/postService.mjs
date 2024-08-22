@@ -14,9 +14,9 @@ export const getPostById = async (id) => {
   return rows[0];
 };
 
-export const getPostByUsername = async (username) => {
-  const text = `SELECT * FROM posts WHERE userid = (SELECT id FROM users WHERE username = $1)`;
-  const values = [username];
+export const getPostsById = async (id) => {
+  const text = `SELECT users.*, posts.* FROM users INNER JOIN posts ON users.id = posts.userid WHERE users.id = $1`;
+  const values = [id];
   const { rows } = await query(text, values);
   return rows;
 };
@@ -26,6 +26,14 @@ export const createPost = async (userId, caption, imageurl) => {
   const values = [userId, caption, imageurl];
   const { rows } = await query(text, values);
   return rows[0];
+};
+
+export const checkIfLiked = async (postId, userId) => {
+  const result = await query(
+    "SELECT * FROM likes WHERE postid = $1 AND userid = $2",
+    [postId, userId]
+  );
+  return result.rowCount > 0; // Returns true if the user has liked the post
 };
 
 export const addLike = async (postId, userId) => {
@@ -67,7 +75,7 @@ export const declike = async (postId) => {
 };
 
 export const getcomments = async (postId) => {
-  const text = `SELECT * FROM comments WHERE postid = $1`;
+  const text = ` SELECT  comments.*,  users.* FROM  comments JOIN  users ON comments.userId = users.id WHERE  comments.postId = $1`;
   const values = [postId];
   const { rows } = await query(text, values);
   return rows;
