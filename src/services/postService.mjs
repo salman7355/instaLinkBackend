@@ -107,22 +107,3 @@ export const getTokenbyUserId = async (userId) => {
   const { rows } = await query(text, [userId]);
   return rows[0]?.token;
 };
-
-export const sendNotification = async (token, message) => {
-  const expo = new Expo();
-  const messageObject = {
-    to: token,
-    sound: "default",
-    title: message.title,
-    body: message.body,
-    data: message.data,
-  };
-  try {
-    const res = await expo.sendPushNotificationsAsync([messageObject]);
-    console.log("notification sent", res);
-
-    return res;
-  } catch (error) {
-    console.error(error.message);
-  }
-};

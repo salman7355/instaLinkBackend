@@ -15,8 +15,10 @@ import {
   checkIfLiked,
   getPostAuthorId,
   getTokenbyUserId,
-  sendNotification,
 } from "../services/postService.mjs";
+import { sendNotification } from "../utils/Notification.mjs";
+
+const expo = new Expo();
 
 export const getPosts = async (req, res) => {
   try {
@@ -82,6 +84,45 @@ export const addlike = async (req, res) => {
     // add like to post and update the likes count in the posts table for the post
     await addLike(postId, userId);
     await updateLikesCount(postId);
+
+    const postAuthor = await getPostAuthorId(postId);
+    console.log("postAuthorId", postAuthor);
+
+    if (postAuthor) {
+      // const token = await getTokenbyUserId(postAuthor.userid);
+      // console.log(token);
+
+      const message = {
+        title: "Like",
+        body: `${postAuthor.username} liked your post`,
+        data: { type: "like" },
+      };
+
+      await sendNotification(
+        postAuthor.userid,
+        message.title,
+        message.body,
+        message.data
+      );
+
+      // if (token.length > 0) {
+      //   const message = {
+      //     title: "Like",
+      //     body: `${postAuthor.username} liked your post`,
+      //     data: { type: "like" },
+      //   };
+      //   expo.sendPushNotificationsAsync([
+      //     {
+      //       to: token,
+      //       sound: "default",
+      //       title: message.title,
+      //       body: message.body,
+      //       data: message.data,
+      //     },
+      //   ]);
+      // }
+    }
+
     return res.status(201).send("Like added successfully");
   } catch (error) {
     console.error(error.message);
@@ -140,7 +181,7 @@ export const getComments = async (req, res) => {
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
-const expo = new Expo();
+
 export const addComment = async (req, res) => {
   const { postId, userId, comment } = req.body;
   try {
@@ -148,26 +189,40 @@ export const addComment = async (req, res) => {
       return res.status(400).send({ error: "All fields are required" });
     }
 
-    const newCommment = await addcomment(postId, userId, comment);
+    await addcomment(postId, userId, comment);
     await updateCommentsCount(postId);
 
     const postAuthor = await getPostAuthorId(postId);
     console.log("postAuthorId", postAuthor);
 
     if (postAuthor) {
-      const token = await getTokenbyUserId(postAuthor.userid);
-      console.log(token);
+      // const token = await getTokenbyUserId(postAuthor.userid);
+      // console.log(token);
 
-      if (token.length > 0) {
-        expo.sendPushNotificationsAsync([
-          {
-            to: token,
-            sound: "default",
-            title: "New Comment",
-            body: `${postAuthor.username} commented on your post`,
-          },
-        ]);
-      }
+      // if (token.length > 0) {
+      const message = {
+        title: "Comment",
+        body: `${postAuthor.username} commented on your post`,
+        data: { type: "comment" },
+      };
+
+      await sendNotification(
+        postAuthor.userid,
+        message.title,
+        message.body,
+        message.data
+      );
+
+      //   expo.sendPushNotificationsAsync([
+      //     {
+      //       to: token,
+      //       sound: "default",
+      //       title: message.title,
+      //       body: message.body,
+      //       data: message.data,
+      //     },
+      //   ]);
+      // }
     }
 
     return res.status(201).json("Comment added successfully");
