@@ -1,5 +1,6 @@
 import e from "cors";
 import { query } from "../config/db.mjs";
+import Expo from "expo-server-sdk";
 
 export const getposts = async () => {
   const text = `SELECT posts.*, users.username, users.profilepictureurl FROM posts JOIN users ON posts.userId = users.id`;
@@ -93,4 +94,35 @@ export const updateCommentsCount = async (postId) => {
   const values = [postId];
   const { rows } = await query(text, values);
   return rows[0];
+};
+
+export const getPostAuthorId = async (postId) => {
+  const text = ` SELECT p.userid, u.username FROM posts p INNER JOIN users u ON p.userid = u.id WHERE p.id = $1;`;
+  const { rows } = await query(text, [postId]);
+  return rows[0];
+};
+
+export const getTokenbyUserId = async (userId) => {
+  const text = `SELECT token FROM push_tokens WHERE user_id = $1`;
+  const { rows } = await query(text, [userId]);
+  return rows[0]?.token;
+};
+
+export const sendNotification = async (token, message) => {
+  const expo = new Expo();
+  const messageObject = {
+    to: token,
+    sound: "default",
+    title: message.title,
+    body: message.body,
+    data: message.data,
+  };
+  try {
+    const res = await expo.sendPushNotificationsAsync([messageObject]);
+    console.log("notification sent", res);
+
+    return res;
+  } catch (error) {
+    console.error(error.message);
+  }
 };

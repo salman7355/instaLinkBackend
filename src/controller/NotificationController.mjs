@@ -1,8 +1,11 @@
+import { Expo } from "expo-server-sdk";
 import {
   findTokenByUserId,
   savetoken,
   updateToken,
 } from "../services/NotificationService.mjs";
+
+const expo = new Expo();
 
 export const SaveToken = async (req, res) => {
   const { user_id, token } = req.body;
@@ -27,4 +30,16 @@ export const SaveToken = async (req, res) => {
     console.error(error.message);
     return res.status(500).json({ error: "Something went wrong" });
   }
+};
+
+export const sample = async (req, res) => {
+  const { token } = req.body;
+  expo.sendPushNotificationsAsync([
+    {
+      to: token,
+      title: "Hello",
+      body: "World",
+    },
+  ]);
+  return res.status(200).send("Notification sent successfully");
 };

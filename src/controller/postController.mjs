@@ -1,3 +1,4 @@
+import { Expo } from "expo-server-sdk";
 import {
   addcomment,
   addLike,
@@ -12,6 +13,9 @@ import {
   updateCommentsCount,
   updateLikesCount,
   checkIfLiked,
+  getPostAuthorId,
+  getTokenbyUserId,
+  sendNotification,
 } from "../services/postService.mjs";
 
 export const getPosts = async (req, res) => {
@@ -136,7 +140,7 @@ export const getComments = async (req, res) => {
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
-
+const expo = new Expo();
 export const addComment = async (req, res) => {
   const { postId, userId, comment } = req.body;
   try {
@@ -144,8 +148,28 @@ export const addComment = async (req, res) => {
       return res.status(400).send({ error: "All fields are required" });
     }
 
-    await addcomment(postId, userId, comment);
+    const newCommment = await addcomment(postId, userId, comment);
     await updateCommentsCount(postId);
+
+    const postAuthor = await getPostAuthorId(postId);
+    console.log("postAuthorId", postAuthor);
+
+    if (postAuthor) {
+      const token = await getTokenbyUserId(postAuthor.userid);
+      console.log(token);
+
+      if (token.length > 0) {
+        expo.sendPushNotificationsAsync([
+          {
+            to: token,
+            sound: "default",
+            title: "New Comment",
+            body: `${postAuthor.username} commented on your post`,
+          },
+        ]);
+      }
+    }
+
     return res.status(201).json("Comment added successfully");
   } catch (error) {
     console.error(error.message);
