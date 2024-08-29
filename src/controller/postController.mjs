@@ -86,7 +86,7 @@ export const addlike = async (req, res) => {
     await updateLikesCount(postId);
 
     const postAuthor = await getPostAuthorId(postId);
-    console.log("postAuthorId", postAuthor);
+    // console.log("postAuthorId", postAuthor);
 
     if (postAuthor) {
       // const token = await getTokenbyUserId(postAuthor.userid);
@@ -132,7 +132,7 @@ export const addlike = async (req, res) => {
 
 export const getLikedPosts = async (req, res) => {
   const { userId } = req.params;
-  console.log(userId);
+  // console.log(userId);
 
   try {
     const posts = await getLikedposts(userId);
@@ -193,7 +193,7 @@ export const addComment = async (req, res) => {
     await updateCommentsCount(postId);
 
     const postAuthor = await getPostAuthorId(postId);
-    console.log("postAuthorId", postAuthor);
+    // console.log("postAuthorId", postAuthor);
 
     if (postAuthor) {
       // const token = await getTokenbyUserId(postAuthor.userid);

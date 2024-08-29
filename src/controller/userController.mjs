@@ -1,3 +1,4 @@
+import { addusertosearchhistory } from "../services/SearchHistoryService.mjs";
 import {
   createUser,
   getUserByEmail,
@@ -65,6 +66,7 @@ export const Login = async (req, res) => {
 
 export const SearchUser = async (req, res) => {
   const { username } = req.params;
+
   try {
     if (!username) {
       return res.status(400).send({ error: "Username is required" });

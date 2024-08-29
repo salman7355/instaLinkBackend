@@ -23,7 +23,7 @@ export const AddFriend = async (req, res) => {
 
     const friend = await checkFriend(user_id, friend_id);
     if (friend) {
-      return res.status(400).send({ error: "Friend already added" });
+      return res.status(400).josn({ error: "Friend already added" });
     }
 
     await addfriend(user_id, friend_id);
@@ -61,10 +61,10 @@ export const AddFriend = async (req, res) => {
     //   ]);
     // }
 
-    return res.status(201).send("Friend added successfully");
+    return res.status(201).json("Friend added successfully");
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };
 
@@ -72,15 +72,15 @@ export const RemoveFriend = async (req, res) => {
   const { user_id, friend_id } = req.body;
   try {
     if (!user_id || !friend_id) {
-      return res.status(400).send({ error: "All fields are required" });
+      return res.status(400).json({ error: "All fields are required" });
     }
     await removefriend(user_id, friend_id);
     await decrementFollowing(user_id);
     await decrementFollowers(friend_id);
-    return res.status(200).send("Friend removed successfully");
+    return res.status(200).json("Friend removed successfully");
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };
 
