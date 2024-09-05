@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-router.get("/all", getPosts);
+router.get("/all/:userId", getPosts);
 router.get("/:id", getPostByid);
 router.post("/add", addPost);
 router.get("/user/:id", getUserPosts);

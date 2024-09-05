@@ -4,6 +4,7 @@ import {
   savetoken,
   updateToken,
 } from "../services/NotificationService.mjs";
+import { query } from "../config/db.mjs";
 
 const expo = new Expo();
 

@@ -17,15 +17,30 @@ import {
   getTokenbyUserId,
 } from "../services/postService.mjs";
 import { sendNotification } from "../utils/Notification.mjs";
+import { query } from "../config/db.mjs";
 
 const expo = new Expo();
 
 export const getPosts = async (req, res) => {
+  const { userId } = req.params;
+
   try {
     const posts = await getposts();
+
+    const likedPostsQuery = `
+      SELECT postid FROM likes WHERE userid = $1
+    `;
+    const { rows } = await query(likedPostsQuery, [userId]);
+    // console.log(rows);
+
+    // Extract liked post IDs into an array
+    const likedPostIds = rows.map((row) => row.postid);
+    // console.log(likedPostIds);
+
     const formattedPosts = posts.map((post) => ({
       ...post,
       timestamp: new Date(post.timestamp).toLocaleString(), // Converts timestamp to readable format
+      isLiked: likedPostIds.includes(post.id), // Check if post ID is in liked posts array
     }));
 
     return res.status(200).send(formattedPosts);
@@ -39,14 +54,14 @@ export const addPost = async (req, res) => {
   const { userId, caption, imageurl } = req.body;
   try {
     if (!userId || !caption || !imageurl) {
-      return res.status(400).send({ error: "All fields are required" });
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     const post = await createPost(userId, caption, imageurl);
-    return res.status(201).send("Post created successfully");
+    return res.status(201).json("Post created successfully");
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };
 
