@@ -36,8 +36,15 @@ export const searchUser = async (username) => {
 };
 
 export const getuserbyid = async (id) => {
-  const text = `SELECT * FROM users  WHERE id = $1`;
+  const text = `SELECT * FROM users WHERE id = $1`;
   const values = [id];
+  const { rows } = await query(text, values);
+  return rows[0];
+};
+
+export const updateuser = async (id, username, email, mobile, password) => {
+  const text = `UPDATE users SET username = $1 , email = $2 , mobile = $3 , password = $4 WHERE id = $5 RETURNING *`;
+  const values = [username, email, mobile, password, id];
   const { rows } = await query(text, values);
   return rows[0];
 };

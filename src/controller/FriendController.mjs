@@ -11,6 +11,8 @@ import {
 } from "../services/FriendService.mjs";
 import { getTokenbyUserId } from "../services/postService.mjs";
 import { sendNotification } from "../utils/Notification.mjs";
+import { getuserbyid } from "../services/userService.mjs";
+import { insertnotification } from "../services/NotificationService.mjs";
 
 const expo = new Expo();
 
@@ -30,9 +32,15 @@ export const AddFriend = async (req, res) => {
     await incrementFollowing(user_id);
     await incrementFollowers(friend_id);
 
+    const Actor = await getuserbyid(user_id);
+
+    if (!Actor) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     const message = {
       title: "New Friend Request",
-      body: "You have a new friend request",
+      body: `${Actor.username} sent you a friend request`,
       data: { type: "friend_request" },
     };
 
@@ -43,23 +51,13 @@ export const AddFriend = async (req, res) => {
       message.data
     );
 
-    // const friendToken = await getTokenbyUserId(friend_id);
-    // if (friendToken.length > 0) {
-    //   const message = {
-    //     title: "New Friend Request",
-    //     body: "You have a new friend request",
-    //     data: { type: "friend_request" },
-    //   };
-    //   await expo.sendPushNotificationsAsync([
-    //     {
-    //       to: friendToken,
-    //       sound: "default",
-    //       title: message.title,
-    //       body: message.body,
-    //       data: message.data,
-    //     },
-    //   ]);
-    // }
+    await insertnotification(
+      friend_id,
+      user_id,
+      null,
+      message.data.type,
+      message.body
+    );
 
     return res.status(201).json("Friend added successfully");
   } catch (error) {

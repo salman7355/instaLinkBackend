@@ -3,7 +3,7 @@ import { query } from "../config/db.mjs";
 import Expo from "expo-server-sdk";
 
 export const getposts = async () => {
-  const text = `SELECT posts.*, users.username, users.profilepictureurl FROM posts JOIN users ON posts.userId = users.id`;
+  const text = `SELECT posts.*, users.username, users.profilepictureurl FROM posts JOIN users ON posts.userId = users.id ORDER BY timestamp DESC`;
   const { rows } = await query(text);
   return rows;
 };

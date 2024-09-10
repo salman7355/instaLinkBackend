@@ -4,6 +4,7 @@ import {
   getUserByEmail,
   getuserbyid,
   searchUser,
+  updateuser,
 } from "../services/userService.mjs";
 
 export const CreateUser = async (req, res) => {
@@ -91,6 +92,18 @@ export const GetUserById = async (req, res) => {
     if (!user) {
       return res.status(404).send({ error: "User not found" });
     }
+    return res.status(200).send(user);
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ error: "Something went wrong" });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { username, email, mobile, password } = req.body;
+  try {
+    const user = await updateuser(id, username, email, mobile, password);
     return res.status(200).send(user);
   } catch (error) {
     console.error(error.message);

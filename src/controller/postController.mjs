@@ -18,6 +18,8 @@ import {
 } from "../services/postService.mjs";
 import { sendNotification } from "../utils/Notification.mjs";
 import { query } from "../config/db.mjs";
+import { getuserbyid } from "../services/userService.mjs";
+import { insertnotification } from "../services/NotificationService.mjs";
 
 const expo = new Expo();
 
@@ -33,14 +35,13 @@ export const getPosts = async (req, res) => {
     const { rows } = await query(likedPostsQuery, [userId]);
     // console.log(rows);
 
-    // Extract liked post IDs into an array
     const likedPostIds = rows.map((row) => row.postid);
     // console.log(likedPostIds);
 
     const formattedPosts = posts.map((post) => ({
       ...post,
-      timestamp: new Date(post.timestamp).toLocaleString(), // Converts timestamp to readable format
-      isLiked: likedPostIds.includes(post.id), // Check if post ID is in liked posts array
+      // timestamp: new Date(post.timestamp).toLocaleString(), // Converts timestamp to readable format
+      isLiked: likedPostIds.includes(post.id),
     }));
 
     return res.status(200).send(formattedPosts);
@@ -96,47 +97,42 @@ export const addlike = async (req, res) => {
     if (!postId || !userId) {
       return res.status(400).send({ error: "All fields are required" });
     }
-    // add like to post and update the likes count in the posts table for the post
+
     await addLike(postId, userId);
     await updateLikesCount(postId);
 
     const postAuthor = await getPostAuthorId(postId);
-    // console.log("postAuthorId", postAuthor);
 
-    if (postAuthor) {
-      // const token = await getTokenbyUserId(postAuthor.userid);
-      // console.log(token);
-
-      const message = {
-        title: "Like",
-        body: `${postAuthor.username} liked your post`,
-        data: { type: "like" },
-      };
-
-      await sendNotification(
-        postAuthor.userid,
-        message.title,
-        message.body,
-        message.data
-      );
-
-      // if (token.length > 0) {
-      //   const message = {
-      //     title: "Like",
-      //     body: `${postAuthor.username} liked your post`,
-      //     data: { type: "like" },
-      //   };
-      //   expo.sendPushNotificationsAsync([
-      //     {
-      //       to: token,
-      //       sound: "default",
-      //       title: message.title,
-      //       body: message.body,
-      //       data: message.data,
-      //     },
-      //   ]);
-      // }
+    if (!postAuthor) {
+      return res.status(404).json({ error: "Post not found" });
     }
+
+    const Actor = await getuserbyid(userId);
+
+    if (!Actor) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const message = {
+      title: "Like",
+      body: `${Actor.username} liked your post`,
+      data: { type: "like" },
+    };
+
+    await sendNotification(
+      postAuthor.userid,
+      message.title,
+      message.body,
+      message.data
+    );
+
+    await insertnotification(
+      postAuthor.userid,
+      userId,
+      postId,
+      message.data.type,
+      message.body
+    );
 
     return res.status(201).send("Like added successfully");
   } catch (error) {
@@ -210,35 +206,35 @@ export const addComment = async (req, res) => {
     const postAuthor = await getPostAuthorId(postId);
     // console.log("postAuthorId", postAuthor);
 
-    if (postAuthor) {
-      // const token = await getTokenbyUserId(postAuthor.userid);
-      // console.log(token);
+    const Actor = await getuserbyid(userId);
 
-      // if (token.length > 0) {
-      const message = {
-        title: "Comment",
-        body: `${postAuthor.username} commented on your post`,
-        data: { type: "comment" },
-      };
-
-      await sendNotification(
-        postAuthor.userid,
-        message.title,
-        message.body,
-        message.data
-      );
-
-      //   expo.sendPushNotificationsAsync([
-      //     {
-      //       to: token,
-      //       sound: "default",
-      //       title: message.title,
-      //       body: message.body,
-      //       data: message.data,
-      //     },
-      //   ]);
-      // }
+    if (!Actor) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    if (!postAuthor) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    const message = {
+      title: "Comment",
+      body: `${Actor.username} commented on your post`,
+      data: { type: "comment" },
+    };
+
+    await sendNotification(
+      postAuthor.userid,
+      message.title,
+      message.body,
+      message.data
+    );
+
+    await insertnotification(
+      postAuthor.userid,
+      userId,
+      postId,
+      message.data.type,
+      message.body
+    );
 
     return res.status(201).json("Comment added successfully");
   } catch (error) {
