@@ -181,12 +181,12 @@ export const getComments = async (req, res) => {
     const comments = await getcomments(postId);
 
     // Format the date in each comment
-    const formattedComments = comments.map((comment) => ({
-      ...comment,
-      timestamp: formatDate(comment.timestamp), // Format the timestamp to only the day
-    }));
+    // const formattedComments = comments.map((comment) => ({
+    //   ...comment,
+    //   timestamp: formatDate(comment.timestamp), // Format the timestamp to only the day
+    // }));
 
-    return res.status(200).json(formattedComments);
+    return res.status(200).json(comments);
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ error: "Something went wrong" });

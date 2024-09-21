@@ -14,7 +14,6 @@ export const pool = new Pool({
 
 pool.on("connect", () => {
   console.log("connected to the db");
-  //   console.log(process.env.HOST);
 });
 
 export const query = (text, params) => pool.query(text, params);
